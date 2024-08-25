@@ -1,4 +1,7 @@
 PRODUCER  
 topic:  rust-kafka-test
 key: mykeyq
-aaa
+{
+    "name" : "John",
+    "age": 29
+}

@@ -348,6 +348,8 @@ name = "rust-kafka"
 version = "0.1.0"
 dependencies = [
  "rdkafka",
+ "serde",
+ "serde_json",
  "tokio",
  "uuid",
 ]

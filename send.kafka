@@ -1,0 +1,4 @@
+PRODUCER  
+topic:  rust-kafka-test
+key: mykeyq
+aaa

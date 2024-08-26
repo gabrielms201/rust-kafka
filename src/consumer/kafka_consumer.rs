@@ -4,7 +4,8 @@ use rdkafka::{ClientConfig, Message};
 use ::futures::future::BoxFuture;
 use std::sync::Arc;
 
-pub(crate) type AsyncCallback<I> = dyn 'static + Send + Sync + Fn(I) -> BoxFuture<'static, ()>;
+////TODO: Mover para struct separada de Callback
+pub(crate) type AsyncCallback<T> = Arc<dyn Fn(T) -> BoxFuture<'static, ()> + Send + Sync>;
 
 pub struct KafkaConsumer<T>
 where
@@ -13,7 +14,7 @@ where
     topic: String,
     stream_consumer: StreamConsumer,
     _marker: std::marker::PhantomData<T>,
-    callback: Arc<AsyncCallback<T>>
+    callback: AsyncCallback<T>
 }
 
 impl<T> KafkaConsumer<T>
@@ -24,7 +25,7 @@ where
         topic: &str,
         consumer_group: &str,
         bootstrap_server: &str,
-        callback: Arc<AsyncCallback<T>>) -> Self {
+        callback: AsyncCallback<T>) -> Self {
         let stream_consumer = ClientConfig::new()
                         .set("bootstrap.servers", bootstrap_server)
                         .set("enable.partition.eof", "false")

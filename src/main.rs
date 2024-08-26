@@ -1,9 +1,9 @@
 mod consumer;
 mod contracts;
 use contracts::person::Person;
+use consumer::kafka_consumer::AsyncCallback;
 use consumer::kafka_consumer::KafkaConsumer;
 use std::sync::Arc;
-use futures::future::BoxFuture;
 use tokio::io::AsyncWriteExt;
 
 async fn person_cb(person: Person)
@@ -14,15 +14,19 @@ async fn person_cb(person: Person)
     stdout.write(b"\n").await.unwrap();
 }
 
-fn create_callback() -> impl Fn(Person) -> BoxFuture<'static, ()> + Send + Sync {
-    move |person: Person| -> BoxFuture<'static, ()> {
-        Box::pin(person_cb(person))
-    }
+//TODO: Mover para struct separada de Callback
+fn create_callback<T, F, Fut>(handler: F) -> AsyncCallback<T>
+where
+    T: Send + Sync + 'static,
+    F: Fn(T) -> Fut + Send + Sync + 'static,
+    Fut: std::future::Future<Output = ()> + Send + 'static,
+{
+    Arc::new(move |item: T| Box::pin(handler(item)))
 }
 
 #[tokio::main] 
 async fn main() {
-    let callback: Arc<dyn Fn(Person) -> BoxFuture<'static, ()> + Send + Sync> = Arc::new(create_callback());
+    let callback = create_callback(person_cb);
 
     let consumer = KafkaConsumer::<Person>::new(
         "rust-kafka-test",

@@ -6,8 +6,6 @@ use std::sync::Arc;
 use futures::future::BoxFuture;
 use tokio::io::AsyncWriteExt;
 
-
-
 async fn person_cb(person: Person)
 {
     let mut stdout = tokio::io::stdout();

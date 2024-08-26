@@ -11,8 +11,6 @@ where
     T: DeserializeOwned
 {
     topic: String,
-    consumer_group: String,
-    bootstrap_server: String,
     stream_consumer: StreamConsumer,
     _marker: std::marker::PhantomData<T>,
     callback: Arc<AsyncCallback<T>>
@@ -30,14 +28,12 @@ where
         let stream_consumer = ClientConfig::new()
                         .set("bootstrap.servers", bootstrap_server)
                         .set("enable.partition.eof", "false")
-                        .set("group.id", "rust-kafka")
+                        .set("group.id", consumer_group)
                         .create()
                         .expect("Failed to create client");
 
         return KafkaConsumer {
             topic: topic.to_string(),
-            consumer_group: consumer_group.to_string(),
-            bootstrap_server: bootstrap_server.to_string(),
             stream_consumer,
             _marker: std::marker::PhantomData,
             callback

@@ -1,11 +1,7 @@
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use serde::de::DeserializeOwned;
 use rdkafka::{ClientConfig, Message};
-use ::futures::future::BoxFuture;
-use std::sync::Arc;
-
-////TODO: Mover para struct separada de Callback
-pub(crate) type AsyncCallback<T> = Arc<dyn Fn(T) -> BoxFuture<'static, ()> + Send + Sync>;
+use crate::callbacks::async_callback::AsyncCallback;
 
 pub struct KafkaConsumer<T>
 where

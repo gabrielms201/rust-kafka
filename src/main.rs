@@ -1,10 +1,10 @@
 mod consumer;
 mod contracts;
+pub mod callbacks;
 use contracts::person::Person;
-use consumer::kafka_consumer::AsyncCallback;
 use consumer::kafka_consumer::KafkaConsumer;
-use std::sync::Arc;
 use tokio::io::AsyncWriteExt;
+use callbacks::async_callback::create_consumer_callback;
 
 async fn person_cb(person: Person)
 {
@@ -14,25 +14,13 @@ async fn person_cb(person: Person)
     stdout.write(b"\n").await.unwrap();
 }
 
-//TODO: Mover para struct separada de Callback
-fn create_callback<T, F, Fut>(handler: F) -> AsyncCallback<T>
-where
-    T: Send + Sync + 'static,
-    F: Fn(T) -> Fut + Send + Sync + 'static,
-    Fut: std::future::Future<Output = ()> + Send + 'static,
-{
-    Arc::new(move |item: T| Box::pin(handler(item)))
-}
-
 #[tokio::main] 
 async fn main() {
-    let callback = create_callback(person_cb);
-
     let consumer = KafkaConsumer::<Person>::new(
         "rust-kafka-test",
         "group",
         "localhost:9092",
-        callback.clone(),
+        create_consumer_callback(person_cb),
     );
     
     consumer.start_async().await;
